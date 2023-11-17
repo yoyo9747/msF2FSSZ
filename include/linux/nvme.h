@@ -686,6 +686,7 @@ struct nvme_zone_descriptor {
 };
 
 enum {
+	NVME_ZONE_TYPE_CONVENTIONAL	= 0x1,
 	NVME_ZONE_TYPE_SEQWRITE_REQ	= 0x2,
 };
 
