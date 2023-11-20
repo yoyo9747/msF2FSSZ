@@ -44,7 +44,7 @@
 *.symtypes
 *.symversions
 *.tab.[ch]
-*.tar
+#*.tar
 *.usyms
 *.xz
 *.zst
