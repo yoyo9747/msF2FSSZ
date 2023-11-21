@@ -153,23 +153,25 @@ static int nvme_zone_parse_entry(struct nvme_ns *ns,
 				 unsigned int idx, report_zones_cb cb,
 				 void *data)
 {
-	struct blk_zone zone = { };
+		struct blk_zone zone = { };
 
-	if ((entry->zt & 0xf) != NVME_ZONE_TYPE_SEQWRITE_REQ) {
-		dev_err(ns->ctrl->device, "invalid zone type %#x\n",
-				entry->zt);
+	if ((((entry->zt & 0xf) != NVME_ZONE_TYPE_SEQWRITE_REQ)&&((entry->zt & 0xf) != NVME_ZONE_TYPE_CONVENTIONAL))){
 		return -EINVAL;
 	}
 
-	zone.type = BLK_ZONE_TYPE_SEQWRITE_REQ;
+	//zone.type = BLK_ZONE_TYPE_SEQWRITE_REQ;
+	if((entry->zt & 0xf) == NVME_ZONE_TYPE_CONVENTIONAL){
+		zone.type = BLK_ZONE_TYPE_CONVENTIONAL;
+		dev_err(ns->ctrl->device, "[inho] conv to zidx %x\n",idx);
+	}
+	else {
+		zone.type = BLK_ZONE_TYPE_SEQWRITE_REQ;
+	}
 	zone.cond = entry->zs >> 4;
 	zone.len = ns->zsze;
 	zone.capacity = nvme_lba_to_sect(ns, le64_to_cpu(entry->zcap));
 	zone.start = nvme_lba_to_sect(ns, le64_to_cpu(entry->zslba));
-	if (zone.cond == BLK_ZONE_COND_FULL)
-		zone.wp = zone.start + zone.len;
-	else
-		zone.wp = nvme_lba_to_sect(ns, le64_to_cpu(entry->wp));
+	zone.wp = nvme_lba_to_sect(ns, le64_to_cpu(entry->wp));
 
 	return cb(&zone, idx, data);
 }
